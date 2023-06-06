@@ -12,10 +12,27 @@ export default function Auth(req, res, next) {
   }
 }
 
-export function localVariables(req, res, next) {
+export function clearLocalVariables(req, res, next) {
   req.app.locals = {
     OTP: null,
     resetSession: false,
   };
   next();
 }
+
+export const verifyJWT = (req, res, next) => {
+  try {
+    const cookies = req.cookies;
+    if (!cookies) return req.status(401).json({ message: "JWT Token Error" });
+
+    const token = cookies.jwt;
+    jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
+      console.log(decoded);
+      console.log(err);
+      if (err) return res.status(403).json({ message: err });
+      next();
+    });
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+};

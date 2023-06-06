@@ -1,39 +1,33 @@
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
-let testAccount = await nodemailer.createTestAccount();
+dotenv.config();
 
 const nodeConfig = {
-  host: "smtp.ethereal.email",
-  port: 587,
-  secure: false,
+  service: "gmail",
   auth: {
-    user: testAccount.user,
-    pass: testAccount.pass,
+    user: process.env.OTP_EMAIL,
+    pass: process.env.OTP_EMAIL_PASS,
   },
 };
+
 let transporter = nodemailer.createTransport(nodeConfig);
 
 export const mailGenerator = (req, res, next) => {
   const { email, firstName, lastName } = req.body;
+  console.log(process.env.OTP_EMAIL, process.env.OTP_EMAIL_PASS);
 
-  var emailBody = {
-    body: {
-      name: firstName + " " + lastName,
-      intro: `Your OTP is ${req.app.locals.OTP}`,
-      outro: `Please Use the OTP`,
-    },
-  };
   let message = {
-    from: "abraralhasan123@gmail.com",
+    from: "abraralhasanprogrammer@gmail.com",
     to: email,
     subject: "OTP",
-    text: req.app.locals.OTP,
-    html: `<b>THIS IS YOUR ONE TIME PASS ${req.app.locals.OTP}</b>`,
+    text: `THe One-Time-Password is ${req.app.locals.OTP}`,
   };
 
   transporter
     .sendMail(message)
-    .then(() => {
+    .then((res) => {
+      console.log("OTP has sent to the Mail ", res);
       next();
     })
     .catch((err) => res.status(500).json("Mail Error" + err.message));
